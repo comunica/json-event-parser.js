@@ -1,22 +1,75 @@
 {
-  "name": "jsonparse",
-  "description": "This is a pure-js JSON streaming parser for node.js",
+  "name": "json-event-parser",
+  "version": "1.0.0",
+  "description": "A SAX-style JSON event parser",
   "tags": ["json", "stream"],
-  "version": "1.3.1",
-  "author": "Tim Caswell <tim@creationix.com>",
-  "repository": {
-    "type": "git",
-    "url": "http://github.com/creationix/jsonparse.git"
+  "main": "index.js",
+  "typings": "index",
+  "repository": "git@github.com/Tpt/json-event-parser.js.git",
+  "author": "Tpt <thomas@pellissier-tanon.fr>",
+  "bugs": {
+    "url": "https://github.com/Tpt/json-event-parser.js/issues"
   },
+  "homepage": "https://github.com/Tpt/json-event-parser.js#readme",
+  "license": "MIT",
+  "files": [
+    "lib/**/*.d.ts",
+    "lib/**/*.js",
+    "index.d.ts",
+    "index.js"
+  ],
+  "pre-commit": [
+    "build",
+    "lint",
+    "test"
+  ],
   "devDependencies": {
-    "tape": "~0.1.1",
-    "tap": "~0.3.3"
+    "@rubensworks/eslint-config": "^1.0.0",
+    "@types/jest": "^28.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.2.0",
+    "@typescript-eslint/parser": "^4.1.1",
+    "eslint": "^7.9.0",
+    "eslint-config-es": "^3.23.0",
+    "eslint-import-resolver-typescript": "^2.3.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jest": "^24.0.2",
+    "eslint-plugin-tsdoc": "^0.2.7",
+    "eslint-plugin-unused-imports": "^1.0.0",
+    "jest": "^28.0.0",
+    "manual-git-changelog": "^1.0.0",
+    "pre-commit": "^1.2.2",
+    "ts-jest": "^28.0.0",
+    "typescript": "^4.0.2"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "transformIgnorePatterns": [
+      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$"
+    ],
+    "testRegex": "(/test/.*|(\\.|/)(test|spec))\\.ts$",
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "collectCoverage": true,
+    "coverageThreshold": {
+      "global": {
+        "branches": 60,
+        "functions": 80,
+        "lines": 70,
+        "statements": 70
+      }
+    }
   },
   "scripts": {
-    "test": "tap test/*.js"
-  },
-  "bugs": "http://github.com/creationix/jsonparse/issues",
-  "engines": ["node >= 0.2.0"],
-  "license": "MIT",
-  "main": "jsonparse.js"
+    "test": "jest ${1}",
+    "test-watch": "jest ${1} --watch",
+    "lint": "eslint . --ext .ts --cache",
+    "build": "tsc",
+    "validate": "npm ls",
+    "prepare": "npm run build",
+    "version": "manual-git-changelog onversion"
+  }
 }
