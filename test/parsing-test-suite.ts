@@ -1,5 +1,4 @@
-import { readdirSync } from 'fs';
-import { readFile } from 'fs/promises';
+import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { JsonEventParser } from '..';
 
@@ -46,29 +45,29 @@ describe('JsonEventParser', () => {
   for (const file of readdirSync(path)) {
     if (IGNORED_FILE.has(file)) {
       // We ignore it
-    } else if (file.startsWith('y_')) {
-      it(`should parse successfully ${file}`, async() => {
+      continue;
+    }
+
+    const data = readFileSync(join(path, file));
+    if (file.startsWith('y_')) {
+      it(`should parse successfully ${file}`, () => {
         let error = null;
         const p = new JsonEventParser({
           onError(err: Error) {
             error = err;
           },
         });
-        p.write(await readFile(join(path, file)));
+        p.write(data);
         p.end();
         expect(error).toBeNull();
       });
     } else if (file.startsWith('n_')) {
-      it(`should fail on ${file}`, async() => {
-        let error = null;
-        const p = new JsonEventParser({
-          onError(err: Error) {
-            error = err;
-          },
-        });
-        p.write(await readFile(join(path, file)));
-        p.end();
-        expect(error).toBeInstanceOf(Error);
+      it(`should fail on ${file}`, () => {
+        expect(() => {
+          const p = new JsonEventParser({});
+          p.write(data);
+          p.end();
+        }).toThrow(Error);
       });
     }
   }
