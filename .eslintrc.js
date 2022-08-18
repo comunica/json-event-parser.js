@@ -9,6 +9,7 @@ module.exports = {
         '@rubensworks'
     ],
     rules: {
-        'no-implicit-coercion': 'off'
+        'no-implicit-coercion': 'off',
+        'unicorn/prefer-at': 'off'
     }
 };

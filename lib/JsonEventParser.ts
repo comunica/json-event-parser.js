@@ -125,9 +125,9 @@ export class JsonEventParser {
 
   private static insertInStack(stack: any[], key: string | number | undefined, value: any, push: boolean): void {
     if (typeof key === 'string') {
-      stack.at(-1)[key] = value;
+      stack[stack.length - 1][key] = value;
     } else if (typeof key === 'number') {
-      stack.at(-1).push(value);
+      stack[stack.length - 1].push(value);
     }
     if (push || stack.length === 0) {
       stack.push(value);
