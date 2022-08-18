@@ -60,7 +60,6 @@ export type JsonEvent = { type: 'value'; value: string | number | boolean | null
 
 export interface ICallbacks {
   onError?: (e: Error) => void;
-  onValue?: (value: any) => void;
   onEvent?: (event: JsonEvent) => void;
   onEnd?: () => void;
 }
@@ -68,7 +67,6 @@ export interface ICallbacks {
 export class JsonEventParser {
   private readonly callbacks: ICallbacks;
   private tState: number = START;
-  private value: any = undefined;
 
   // String data
   private string = '';
@@ -490,31 +488,22 @@ export class JsonEventParser {
   }
 
   private push(): void {
-    this.stack.push({ value: this.value, key: this.key, mode: this.mode });
+    this.stack.push({ key: this.key, mode: this.mode });
   }
 
   private pop(): void {
-    const value = this.value;
     const parent = this.stack.pop();
-    this.value = parent.value;
     this.key = parent.key;
     this.mode = parent.mode;
-    this.emit(value);
+    if (this.mode) {
+      this.state = COMMA;
+    }
     if (this.mode === OBJECT) {
       this.emitEvent({ type: 'close-object' });
     } else if (this.mode === ARRAY) {
       this.emitEvent({ type: 'close-array' });
     } else {
       this.state = VALUE;
-    }
-  }
-
-  private emit(value: any): void {
-    if (this.mode) {
-      this.state = COMMA;
-    }
-    if (this.callbacks.onValue) {
-      this.callbacks.onValue(value);
     }
   }
 
@@ -527,30 +516,19 @@ export class JsonEventParser {
   private onToken(token: number, value: any): void {
     if (this.state === VALUE) {
       if (token === STRING || token === NUMBER || token === TRUE || token === FALSE || token === NULL) {
-        if (this.value) {
-          this.value[this.key] = value;
+        if (this.mode) {
+          this.state = COMMA;
         }
-        this.emit(value);
         this.emitEvent({ type: 'value', value, key: this.key });
       } else if (token === LEFT_BRACE) {
         this.push();
         this.emitEvent({ type: 'open-object', key: this.key });
-        if (this.value) {
-          this.value = this.value[this.key] = {};
-        } else {
-          this.value = {};
-        }
         this.key = undefined;
         this.state = KEY;
         this.mode = OBJECT;
       } else if (token === LEFT_BRACKET) {
         this.push();
         this.emitEvent({ type: 'open-array', key: this.key });
-        if (this.value) {
-          this.value = this.value[this.key] = [];
-        } else {
-          this.value = [];
-        }
         this.key = 0;
         this.mode = ARRAY;
         this.state = VALUE;
