@@ -1,7 +1,7 @@
 // Named constants with unique integer values
 import { Buffer } from 'buffer';
 
-const Constants: any = {};
+const Constants: Record<string, number> = {};
 // Tokens
 const LEFT_BRACE = Constants.LEFT_BRACE = 0x1;
 const RIGHT_BRACE = Constants.RIGHT_BRACE = 0x2;
@@ -53,8 +53,8 @@ const TAB = '\t'.charCodeAt(0);
 const STRING_BUFFER_SIZE = 64 * 1_024;
 
 export type JsonEvent = { type: 'value'; value: string | number | boolean | null; key: string | number | undefined } |
-{ type: 'open-object'; key?: string } |
-{ type: 'open-array'; key?: string } |
+{ type: 'open-object'; key?: string | number | undefined } |
+{ type: 'open-array'; key?: string | number | undefined } |
 { type: 'close-object' } |
 { type: 'close-array' };
 
@@ -76,9 +76,9 @@ export class JsonEventParser {
   private unicode = '';
   private highSurrogate: number | undefined = undefined;
 
-  private key: any = undefined;
+  private key: string | number | undefined = undefined;
   private mode = 0;
-  private readonly stack: any[] = [];
+  private readonly stack: { key: string | number | undefined; mode: number }[] = [];
   private state: number = VALUE;
   // Number of bytes remaining in multi byte utf8 char to read after split boundary
   private bytes_remaining = 0;
@@ -493,6 +493,9 @@ export class JsonEventParser {
 
   private pop(): void {
     const parent = this.stack.pop();
+    if (parent === undefined) {
+      throw new Error('The JSON tree too many object or array closings');
+    }
     this.key = parent.key;
     this.mode = parent.mode;
     if (this.mode) {
@@ -565,6 +568,7 @@ export class JsonEventParser {
     } else if (this.state === COMMA) {
       if (token === COMMA) {
         if (this.mode === ARRAY) {
+          // @ts-expect-error We know its a number here
           this.key++;
           this.state = VALUE;
         } else if (this.mode === OBJECT) {
