@@ -428,9 +428,15 @@ export class JsonEventParser {
     }
   }
 
+  public end(): void {
+    if (this.stack.length > 0) {
+      this.onError(new Error('Unexpected end of file'));
+    }
+  }
+
   private parseError(token: number, value: any): void {
     this.tState = STOP;
-    this.onError(new Error(`Unexpected ${JsonEventParser.toknam(token)}${value ? `(${JSON.stringify(value)})` : ''} in state ${JsonEventParser.toknam(this.state)}`));
+    this.onError(new Error(`Unexpected ${JsonEventParser.toknam(token)} ${value ? `(${JSON.stringify(value)})` : ''} in state ${JsonEventParser.toknam(this.state)}`));
   }
 
   private push(): void {
