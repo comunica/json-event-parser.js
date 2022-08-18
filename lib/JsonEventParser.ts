@@ -52,9 +52,17 @@ const TAB = '\t'.charCodeAt(0);
 
 const STRING_BUFFER_SIZE = 64 * 1_024;
 
+export type JsonEvent = { type: 'value'; value: string | number | boolean | null; key: string | number | undefined } |
+{ type: 'open-object'; key?: string } |
+{ type: 'open-array'; key?: string } |
+{ type: 'close-object' } |
+{ type: 'close-array' };
+
 export interface ICallbacks {
   onError?: (e: Error) => void;
   onValue?: (value: any) => void;
+  onEvent?: (event: JsonEvent) => void;
+  onEnd?: () => void;
 }
 
 export class JsonEventParser {
@@ -87,6 +95,45 @@ export class JsonEventParser {
 
   public constructor(callbacks: ICallbacks) {
     this.callbacks = callbacks;
+  }
+
+  /**
+   * Alternative to {JSON.parse} written using {JsonEventParser}.
+   */
+  public static parse(data: Buffer): any {
+    const stack: any[] = [];
+    const parser = new JsonEventParser({
+      onEvent(event) {
+        switch (event.type) {
+          case 'value':
+            JsonEventParser.insertInStack(stack, event.key, event.value, false);
+            break;
+          case 'open-object':
+            JsonEventParser.insertInStack(stack, event.key, {}, true);
+            break;
+          case 'open-array':
+            JsonEventParser.insertInStack(stack, event.key, [], true);
+            break;
+          case 'close-object':
+          case 'close-array':
+            stack.pop();
+        }
+      },
+    });
+    parser.write(data);
+    parser.end();
+    return stack[0];
+  }
+
+  private static insertInStack(stack: any[], key: string | number | undefined, value: any, push: boolean): void {
+    if (typeof key === 'string') {
+      stack.at(-1)[key] = value;
+    } else if (typeof key === 'number') {
+      stack.at(-1).push(value);
+    }
+    if (push || stack.length === 0) {
+      stack.push(value);
+    }
   }
 
   private static toknam(code: number): string {
@@ -432,6 +479,9 @@ export class JsonEventParser {
     if (this.stack.length > 0) {
       this.onError(new Error('Unexpected end of file'));
     }
+    if (this.callbacks.onEnd) {
+      this.callbacks.onEnd();
+    }
   }
 
   private parseError(token: number, value: any): void {
@@ -450,7 +500,11 @@ export class JsonEventParser {
     this.key = parent.key;
     this.mode = parent.mode;
     this.emit(value);
-    if (!this.mode) {
+    if (this.mode === OBJECT) {
+      this.emitEvent({ type: 'close-object' });
+    } else if (this.mode === ARRAY) {
+      this.emitEvent({ type: 'close-array' });
+    } else {
       this.state = VALUE;
     }
   }
@@ -464,6 +518,12 @@ export class JsonEventParser {
     }
   }
 
+  private emitEvent(event: JsonEvent): void {
+    if (this.callbacks.onEvent) {
+      this.callbacks.onEvent(event);
+    }
+  }
+
   private onToken(token: number, value: any): void {
     if (this.state === VALUE) {
       if (token === STRING || token === NUMBER || token === TRUE || token === FALSE || token === NULL) {
@@ -471,8 +531,10 @@ export class JsonEventParser {
           this.value[this.key] = value;
         }
         this.emit(value);
+        this.emitEvent({ type: 'value', value, key: this.key });
       } else if (token === LEFT_BRACE) {
         this.push();
+        this.emitEvent({ type: 'open-object', key: this.key });
         if (this.value) {
           this.value = this.value[this.key] = {};
         } else {
@@ -483,6 +545,7 @@ export class JsonEventParser {
         this.mode = OBJECT;
       } else if (token === LEFT_BRACKET) {
         this.push();
+        this.emitEvent({ type: 'open-array', key: this.key });
         if (this.value) {
           this.value = this.value[this.key] = [];
         } else {

@@ -3,8 +3,8 @@ import { JsonEventParser } from '..';
 describe('JsonEventParser', () => {
   it('parse surrogate pair', () => {
     const p = new JsonEventParser({
-      onValue(value: any) {
-        expect(value).toBe('😋');
+      onEvent(event) {
+        expect(event).toEqual({ type: 'value', value: '😋', key: undefined });
       },
     });
     p.write('"\\uD83D\\uDE0B"');
@@ -12,8 +12,8 @@ describe('JsonEventParser', () => {
 
   it('parse chunked surrogate pair', () => {
     const p = new JsonEventParser({
-      onValue(value: any) {
-        expect(value).toBe('😋');
+      onEvent(event) {
+        expect(event).toEqual({ type: 'value', value: '😋', key: undefined });
       },
     });
     p.write('"\\uD83D');

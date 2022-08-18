@@ -16,16 +16,8 @@ describe('JsonEventParser', () => {
     }
 
     it(`should parse ${file} like JSON.parse`, () => {
-      let parsed: any;
       const data = readFileSync(join(path, file));
-      const p = new JsonEventParser({
-        onValue(value: any) {
-          parsed = value;
-        },
-      });
-      p.write(data);
-      p.end();
-      expect(parsed).toEqual(JSON.parse(data.toString()));
+      expect(JsonEventParser.parse(data)).toEqual(JSON.parse(data.toString()));
     });
   }
 });

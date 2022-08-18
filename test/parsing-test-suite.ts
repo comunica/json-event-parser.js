@@ -51,23 +51,11 @@ describe('JsonEventParser', () => {
     const data = readFileSync(join(path, file));
     if (file.startsWith('y_')) {
       it(`should parse successfully ${file}`, () => {
-        let error = null;
-        const p = new JsonEventParser({
-          onError(err: Error) {
-            error = err;
-          },
-        });
-        p.write(data);
-        p.end();
-        expect(error).toBeNull();
+        JsonEventParser.parse(data);
       });
     } else if (file.startsWith('n_')) {
       it(`should fail on ${file}`, () => {
-        expect(() => {
-          const p = new JsonEventParser({});
-          p.write(data);
-          p.end();
-        }).toThrow(Error);
+        expect(() => JsonEventParser.parse(data)).toThrow(Error);
       });
     }
   }
