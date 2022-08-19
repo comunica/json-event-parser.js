@@ -142,7 +142,7 @@ export class JsonEventParser extends Transform {
 
   public _transform(chunk: any, encoding: string, callback: (error?: Error | null, data?: any) => void): void {
     try {
-      this.parse(JsonEventParser.toBuffer(chunk, encoding));
+      this.parse(<Buffer> chunk);
       return callback();
     } catch (error: unknown) {
       return callback(<Error> error);
@@ -433,17 +433,6 @@ export class JsonEventParser extends Transform {
       return callback(new Error('Unexpected end of file'));
     }
     return callback();
-  }
-
-  private static toBuffer(chunk: any, encoding: string): Buffer {
-    if (chunk instanceof Buffer) {
-      return chunk;
-    }
-    if (chunk instanceof String) {
-      // eslint-disable-next-line no-undef
-      return Buffer.from(chunk, <BufferEncoding>encoding);
-    }
-    throw new Error(`Unsupported chunk type ${typeof chunk}`);
   }
 
   private parseError(token: number, value: any): void {
