@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { JsonEventParser } from '..';
+import { parseJson } from './utils';
 
 const IGNORED_FILE = new Set([
   'n_array_extra_comma.json',
@@ -50,12 +50,12 @@ describe('JsonEventParser', () => {
 
     const data = readFileSync(join(path, file));
     if (file.startsWith('y_')) {
-      it(`should parse successfully ${file}`, () => {
-        JsonEventParser.parse(data);
+      it(`should parse successfully ${file}`, async() => {
+        await parseJson(data);
       });
     } else if (file.startsWith('n_')) {
-      it(`should fail on ${file}`, () => {
-        expect(() => JsonEventParser.parse(data)).toThrow(Error);
+      it(`should fail on ${file}`, async() => {
+        await expect(parseJson(data)).rejects.toBeInstanceOf(Error);
       });
     }
   }

@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { JsonEventParser } from '..';
+import { parseJson } from './utils';
 
 const IGNORED_FILE = new Set([
   'string_1_escaped_invalid_codepoint.json',
@@ -15,9 +15,9 @@ describe('JsonEventParser', () => {
       continue;
     }
 
-    it(`should parse ${file} like JSON.parse`, () => {
+    it(`should parse ${file} like JSON.parse`, async() => {
       const data = readFileSync(join(path, file));
-      expect(JsonEventParser.parse(data)).toEqual(JSON.parse(data.toString()));
+      await expect(parseJson(data)).resolves.toEqual(JSON.parse(data.toString()));
     });
   }
 });

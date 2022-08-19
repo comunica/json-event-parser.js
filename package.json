@@ -24,11 +24,13 @@
     "test"
   ],
   "dependencies": {
-    "buffer": "^6.0.3"
+    "buffer": "^6.0.3",
+    "readable-stream": "^4.0.0"
   },
   "devDependencies": {
     "@rubensworks/eslint-config": "^1.0.0",
     "@types/jest": "^28.0.0",
+    "@types/readable-stream": "^2.3.14",
     "@typescript-eslint/eslint-plugin": "^4.2.0",
     "@typescript-eslint/parser": "^4.1.1",
     "eslint": "^7.9.0",
@@ -54,7 +56,7 @@
     "transformIgnorePatterns": [
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$"
     ],
-    "testRegex": "(/test/.*|(\\.|/)(test|spec))\\.ts$",
+    "testMatch": ["**/test/**/*.[jt]s", "**/?(*.)+(spec|test).[jt]s", "!**/utils.ts"],
     "moduleFileExtensions": [
       "ts",
       "js"
@@ -62,10 +64,10 @@
     "collectCoverage": true,
     "coverageThreshold": {
       "global": {
-        "branches": 90,
-        "functions": 90,
-        "lines": 90,
-        "statements": 90
+        "branches": 94,
+        "functions": 100,
+        "lines": 95,
+        "statements": 95
       }
     }
   },
