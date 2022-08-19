@@ -2,6 +2,12 @@
 import { Buffer } from 'buffer';
 import { Transform } from 'readable-stream';
 
+export type JsonEvent = { type: 'value'; value: string | number | boolean | null; key: string | number | undefined } |
+{ type: 'open-object'; key?: string | number | undefined } |
+{ type: 'open-array'; key?: string | number | undefined } |
+{ type: 'close-object' } |
+{ type: 'close-array' };
+
 const Constants: Record<string, number> = {};
 // Tokens
 const LEFT_BRACE = Constants.LEFT_BRACE = 0x1;
@@ -53,7 +59,7 @@ const TAB = '\t'.charCodeAt(0);
 
 const STRING_BUFFER_SIZE = 64 * 1_024;
 
-export default class JsonEventParser extends Transform {
+export class JsonEventParser extends Transform {
   private tState: number = START;
 
   // String data

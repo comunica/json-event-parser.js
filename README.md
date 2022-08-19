@@ -25,7 +25,7 @@ This package also works out-of-the-box in browsers via tools such as [webpack](h
 Example:
 
 ```typescript
-import JsonEventParser from 'json-event-parser';
+import {JsonEventParser} from 'json-event-parser';
 import {Readable} from "stream";
 
 Readable.from(['{"test": "fo', 'o"}'])

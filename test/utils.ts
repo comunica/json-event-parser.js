@@ -2,7 +2,7 @@
  * Alternative to {JSON.parse} written using {JsonEventParser}.
  */
 import { Readable } from 'stream';
-import JsonEventParser from '..';
+import { JsonEventParser } from '..';
 
 export async function parseJson(data: Iterable<any>): Promise<any> {
   const stack: any[] = [];

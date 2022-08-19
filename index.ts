@@ -1,2 +1,1 @@
-import JsonEventParser from './lib/JsonEventParser';
-export default JsonEventParser;
+export * from './lib/JsonEventParser';
