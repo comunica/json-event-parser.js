@@ -444,22 +444,18 @@ export class JsonEventParser extends Transform {
     this.stack.push({ key: this.key, mode: this.mode });
   }
 
-  private popFromStack(): void {
+  private popFromStack(token: number): void {
     const parent = this.stack.pop();
     if (parent === undefined) {
       throw new Error('The JSON tree too many object or array closings');
     }
     this.key = parent.key;
     this.mode = parent.mode;
-    if (this.mode) {
-      this.state = COMMA;
-    }
-    if (this.mode === OBJECT) {
-      this.push({ type: 'close-object' });
-    } else if (this.mode === ARRAY) {
+    this.state = this.mode ? COMMA : VALUE;
+    if (token === RIGHT_BRACE) {
       this.push({ type: 'close-array' });
-    } else {
-      this.state = VALUE;
+    } else if (token === RIGHT_BRACKET) {
+      this.push({ type: 'close-object' });
     }
   }
 
@@ -484,13 +480,13 @@ export class JsonEventParser extends Transform {
         this.state = VALUE;
       } else if (token === RIGHT_BRACE) {
         if (this.mode === OBJECT) {
-          this.popFromStack();
+          this.popFromStack(token);
         } else {
           return this.parseError(token, value);
         }
       } else if (token === RIGHT_BRACKET) {
         if (this.mode === ARRAY) {
-          this.popFromStack();
+          this.popFromStack(token);
         } else {
           return this.parseError(token, value);
         }
@@ -502,7 +498,7 @@ export class JsonEventParser extends Transform {
         this.key = value;
         this.state = COLON;
       } else if (token === RIGHT_BRACE) {
-        this.popFromStack();
+        this.popFromStack(token);
       } else {
         return this.parseError(token, value);
       }
@@ -522,7 +518,7 @@ export class JsonEventParser extends Transform {
           this.state = KEY;
         }
       } else if (token === RIGHT_BRACKET && this.mode === ARRAY || token === RIGHT_BRACE && this.mode === OBJECT) {
-        this.popFromStack();
+        this.popFromStack(token);
       } else {
         return this.parseError(token, value);
       }
