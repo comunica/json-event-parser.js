@@ -453,9 +453,9 @@ export class JsonEventParser extends Transform {
     this.mode = parent.mode;
     this.state = this.mode ? COMMA : VALUE;
     if (token === RIGHT_BRACE) {
-      this.push({ type: 'close-array' });
-    } else if (token === RIGHT_BRACKET) {
       this.push({ type: 'close-object' });
+    } else if (token === RIGHT_BRACKET) {
+      this.push({ type: 'close-array' });
     }
   }
 

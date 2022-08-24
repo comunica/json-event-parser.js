@@ -19,8 +19,12 @@ export async function parseJson(data: Iterable<any>): Promise<any> {
         root = insertInStack(stack, event.key, [], root);
         break;
       case 'close-object':
+        if (!(stack.pop() instanceof Object)) {
+          throw new Error('Unbalanced JSON');
+        }
+        break;
       case 'close-array':
-        if (stack.pop() === undefined) {
+        if (!Array.isArray(stack.pop())) {
           throw new Error('Unbalanced JSON');
         }
     }
