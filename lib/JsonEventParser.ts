@@ -3,8 +3,8 @@ import { Buffer } from 'buffer';
 import { Transform } from 'readable-stream';
 
 export type JsonEvent = { type: 'value'; value: string | number | boolean | null; key: string | number | undefined } |
-{ type: 'open-object'; key?: string | number | undefined } |
-{ type: 'open-array'; key?: string | number | undefined } |
+{ type: 'open-object'; key: string | number | undefined } |
+{ type: 'open-array'; key: string | number | undefined } |
 { type: 'close-object' } |
 { type: 'close-array' };
 
