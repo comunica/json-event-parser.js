@@ -1,6 +1,6 @@
 # JSON Event Parser
 
-[![Build status](https://github.com/Tpt/json-event-parser.js/workflows/CI/badge.svg)](https://github.com/Tpt/json-event-parser.js/actions?query=workflow%3ACI)
+[![Build status](https://github.com/comunica/json-event-parser.js/workflows/CI/badge.svg)](https://github.com/comunica/json-event-parser.js/actions?query=workflow%3ACI)
 [![npm version](https://badge.fury.io/js/json-event-parser.svg)](https://www.npmjs.com/package/json-event-parser)
 
 A streaming SAX-style JSON parser.
