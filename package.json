@@ -1,8 +1,11 @@
 {
   "name": "json-event-parser",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "description": "A SAX-style JSON event parser",
-  "tags": ["json", "stream"],
+  "tags": [
+    "json",
+    "stream"
+  ],
   "main": "index.js",
   "typings": "index",
   "repository": "git@github.com/Tpt/json-event-parser.js.git",
@@ -56,13 +59,19 @@
     "transformIgnorePatterns": [
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$"
     ],
-    "testMatch": ["**/test/**/*.[jt]s", "**/?(*.)+(spec|test).[jt]s", "!**/utils.ts"],
+    "testMatch": [
+      "**/test/**/*.[jt]s",
+      "**/?(*.)+(spec|test).[jt]s",
+      "!**/utils.ts"
+    ],
     "moduleFileExtensions": [
       "ts",
       "js"
     ],
     "collectCoverage": true,
-    "collectCoverageFrom": ["lib/**/*.ts"],
+    "collectCoverageFrom": [
+      "lib/**/*.ts"
+    ],
     "coverageThreshold": {
       "global": {
         "branches": 94,
