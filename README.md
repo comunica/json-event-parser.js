@@ -31,7 +31,7 @@ import {Readable} from "stream";
 Readable.from(['{"test": "fo', 'o"}'])
     .pipe(new JsonEventParser())
     .on("end", () => console.log('Parsing done!'))
-    .on("error" => error => console.error(error))
+    .on("error", error => console.error(error))
     .on("data", event => console.log(`Event of type ${event.type}`));
 ```
 
@@ -40,6 +40,20 @@ The event fields are:
 * `value`: used on the `"value"` type to store the value itself.
 * `key`: used on the `"value"`, `"open-array"` and `"open-object"` to store the key in the parent object or the position in the parent array.
 
+
+It is also possible to evaluate queries against a given JSON stream:
+
+```typescript
+import {JsonEventParser, JsonStreamPathTransformer} from 'json-event-parser';
+import {Readable} from "stream";
+
+Readable.from(['{"test": "fo', 'o"}'])
+    .pipe(new JsonEventParser())
+    .pipe(new JsonStreamPathTransformer([{id: 'test', query: ['test']}]))
+    .on("end", () => console.log('Parsing done!'))
+    .on("error", error => console.error(error))
+    .on("data", result => console.log(`Matched ${result.value}`));
+```
 ## License
 
 This code is released under the [MIT license](http://opensource.org/licenses/MIT).
