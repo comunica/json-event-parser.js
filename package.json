@@ -27,8 +27,7 @@
     "test"
   ],
   "dependencies": {
-    "buffer": "^6.0.3",
-    "readable-stream": "^4.0.0"
+    "readable-stream": "^4.2.0"
   },
   "devDependencies": {
     "@rubensworks/eslint-config": "^1.0.0",
