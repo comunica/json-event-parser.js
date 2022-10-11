@@ -98,7 +98,8 @@ export class JsonEventParser extends Transform {
         return key;
       }
     }
-    return `0x${code.toString(16)}`;
+    /* istanbul ignore next */
+    throw new Error(`Not supported token code ${code}`);
   }
 
   private charError(buffer: Buffer, i: number): void {
@@ -116,23 +117,7 @@ export class JsonEventParser extends Transform {
   }
 
   private appendStringBuf(buf: Buffer, start?: number, end?: number): void {
-    let size = buf.length;
-    if (typeof start === 'number') {
-      if (typeof end === 'number') {
-        if (end < 0) {
-          // Adding a negative end decreeses the size
-          size = buf.length - start + end;
-        } else {
-          size = end - start;
-        }
-      } else {
-        size = buf.length - start;
-      }
-    }
-
-    if (size < 0) {
-      size = 0;
-    }
+    const size = (end === undefined ? buf.length : end) - (start === undefined ? 0 : start);
 
     if (this.stringBufferOffset + size > STRING_BUFFER_SIZE) {
       this.string += this.stringBuffer.toString('utf8', 0, this.stringBufferOffset);
@@ -460,6 +445,7 @@ export class JsonEventParser extends Transform {
 
   private popFromStack(token: number): void {
     const parent = this.stack.pop();
+    /* istanbul ignore next */
     if (parent === undefined) {
       throw new Error('The JSON tree too many object or array closings');
     }
@@ -537,8 +523,6 @@ export class JsonEventParser extends Transform {
       } else {
         return this.parseError(token, value);
       }
-    } else {
-      return this.parseError(token, value);
     }
   }
 
