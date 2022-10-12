@@ -29,12 +29,6 @@ const IGNORED_FILE = new Set([
   'n_number_neg_real_without_int_part.json',
   'n_number_real_without_fractional_part.json',
   'n_number_with_leading_zero.json',
-  'n_single_space.json',
-  'n_string_single_doublequote.json',
-  'n_structure_angle_bracket_..json',
-  'n_structure_double_array.json',
-  'n_structure_no_data.json',
-  'n_structure_object_with_trailing_garbage.json',
 ]);
 
 describe('JsonEventParser', () => {
@@ -48,7 +42,7 @@ describe('JsonEventParser', () => {
     const data = readFileSync(join(path, file));
     if (file.startsWith('y_')) {
       it(`should parse successfully ${file}`, async() => {
-        await parseJson(data);
+        await expect(parseJson(data)).resolves.toEqual(JSON.parse(data.toString()));
       });
     } else if (file.startsWith('n_')) {
       it(`should fail on ${file}`, async() => {

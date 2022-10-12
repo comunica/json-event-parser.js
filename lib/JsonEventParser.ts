@@ -74,6 +74,7 @@ export class JsonEventParser extends Transform {
 
   private key: string | number | undefined = undefined;
   private mode = 0;
+  private rootFound = false;
   private readonly stack: { key: string | number | undefined; mode: number }[] = [];
   private state: number = VALUE;
   // Number of bytes remaining in multi byte utf8 char to read after split boundary
@@ -431,8 +432,19 @@ export class JsonEventParser extends Transform {
   }
 
   public _flush(callback: (error?: Error | null, data?: any) => void): void {
+    if (this.tState !== START) {
+      // We make sure we fully consume the buffer by reading an extra space
+      try {
+        this.parse(Buffer.from(' '));
+      } catch (error: unknown) {
+        return callback(<Error> error);
+      }
+    }
     if (this.stack.length > 0) {
       return callback(new Error('Unexpected end of file'));
+    }
+    if (!this.rootFound) {
+      return callback(new Error('A JSON file should not be empty'));
     }
     return callback();
   }
@@ -463,6 +475,13 @@ export class JsonEventParser extends Transform {
 
   private onToken(token: number, value: any): void {
     if (this.state === VALUE || this.state === FIRST_VALUE) {
+      if (this.stack.length === 0) {
+        if (this.rootFound) {
+          this.parseError(token, value);
+        } else {
+          this.rootFound = true;
+        }
+      }
       if (token === STRING || token === NUMBER || token === TRUE || token === FALSE || token === NULL) {
         if (this.mode) {
           this.state = COMMA;
