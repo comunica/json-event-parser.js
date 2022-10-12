@@ -3,9 +3,7 @@ import { join } from 'path';
 import { parseJson } from './utils';
 
 const IGNORED_FILE = new Set([
-  'n_array_extra_comma.json',
   'n_array_just_minus.json',
-  'n_array_number_and_comma.json',
   'n_number_-01.json',
   'n_number_-1.0..json',
   'n_number_-2..json',
@@ -31,7 +29,6 @@ const IGNORED_FILE = new Set([
   'n_number_neg_real_without_int_part.json',
   'n_number_real_without_fractional_part.json',
   'n_number_with_leading_zero.json',
-  'n_object_trailing_comma.json',
   'n_single_space.json',
   'n_string_single_doublequote.json',
   'n_structure_angle_bracket_..json',

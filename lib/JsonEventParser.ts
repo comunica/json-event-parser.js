@@ -45,6 +45,8 @@ const STRING6 = Constants.STRING6 = 0x66;
 // Parser States
 const VALUE = Constants.VALUE = 0x71;
 const KEY = Constants.KEY = 0x72;
+const FIRST_VALUE = Constants.FIRST_VALUE = 0x73;
+const FIRST_KEY = Constants.FIRST_KEY = 0x74;
 // Parser Modes
 const OBJECT = Constants.OBJECT = 0x81;
 const ARRAY = Constants.ARRAY = 0x82;
@@ -460,7 +462,7 @@ export class JsonEventParser extends Transform {
   }
 
   private onToken(token: number, value: any): void {
-    if (this.state === VALUE) {
+    if (this.state === VALUE || this.state === FIRST_VALUE) {
       if (token === STRING || token === NUMBER || token === TRUE || token === FALSE || token === NULL) {
         if (this.mode) {
           this.state = COMMA;
@@ -470,22 +472,16 @@ export class JsonEventParser extends Transform {
         this.pushToStack();
         this.push({ type: 'open-object', key: this.key });
         this.key = undefined;
-        this.state = KEY;
         this.mode = OBJECT;
+        this.state = FIRST_KEY;
       } else if (token === LEFT_BRACKET) {
         this.pushToStack();
         this.push({ type: 'open-array', key: this.key });
         this.key = 0;
         this.mode = ARRAY;
-        this.state = VALUE;
-      } else if (token === RIGHT_BRACE) {
-        if (this.mode === OBJECT) {
-          this.popFromStack(token);
-        } else {
-          return this.parseError(token, value);
-        }
+        this.state = FIRST_VALUE;
       } else if (token === RIGHT_BRACKET) {
-        if (this.mode === ARRAY) {
+        if (this.mode === ARRAY && this.state === FIRST_VALUE) {
           this.popFromStack(token);
         } else {
           return this.parseError(token, value);
@@ -493,11 +489,11 @@ export class JsonEventParser extends Transform {
       } else {
         return this.parseError(token, value);
       }
-    } else if (this.state === KEY) {
+    } else if (this.state === KEY || this.state === FIRST_KEY) {
       if (token === STRING) {
         this.key = value;
         this.state = COLON;
-      } else if (token === RIGHT_BRACE) {
+      } else if (token === RIGHT_BRACE && this.state === FIRST_KEY) {
         this.popFromStack(token);
       } else {
         return this.parseError(token, value);
