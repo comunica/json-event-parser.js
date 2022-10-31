@@ -8,12 +8,12 @@
   ],
   "main": "index.js",
   "typings": "index",
-  "repository": "git@github.com/Tpt/json-event-parser.js.git",
+  "repository": "git@github.com/comunica/json-event-parser.js.git",
   "author": "Tpt <thomas@pellissier-tanon.fr>",
   "bugs": {
-    "url": "https://github.com/Tpt/json-event-parser.js/issues"
+    "url": "https://github.com/comunica/json-event-parser.js/issues"
   },
-  "homepage": "https://github.com/Tpt/json-event-parser.js#readme",
+  "homepage": "https://github.com/comunica/json-event-parser.js#readme",
   "license": "MIT",
   "files": [
     "lib/**/*.d.ts",
