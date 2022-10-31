@@ -35,6 +35,7 @@
     "@types/jest": "^28.0.0",
     "@typescript-eslint/eslint-plugin": "^4.2.0",
     "@typescript-eslint/parser": "^4.1.1",
+    "coveralls": "^3.0.0",
     "eslint": "^7.9.0",
     "eslint-config-es": "^3.23.0",
     "eslint-import-resolver-typescript": "^2.3.0",
@@ -73,16 +74,17 @@
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 94,
+        "branches": 100,
         "functions": 100,
-        "lines": 95,
-        "statements": 95
+        "lines": 100,
+        "statements": 100
       }
     }
   },
   "scripts": {
     "test": "jest ${1}",
     "test-watch": "jest ${1} --watch",
+    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls",
     "lint": "eslint . --ext .ts --cache",
     "build": "tsc",
     "validate": "npm ls",

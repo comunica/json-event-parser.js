@@ -1,6 +1,7 @@
 # JSON Event Parser
 
 [![Build status](https://github.com/comunica/json-event-parser.js/workflows/CI/badge.svg)](https://github.com/comunica/json-event-parser.js/actions?query=workflow%3ACI)
+[![Coverage Status](https://coveralls.io/repos/github/comunica/json-event-parser.js/badge.svg?branch=master)](https://coveralls.io/github/comunica/json-event-parser.js?branch=master)
 [![npm version](https://badge.fury.io/js/json-event-parser.svg)](https://www.npmjs.com/package/json-event-parser)
 
 A streaming SAX-style JSON parser.
