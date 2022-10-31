@@ -108,8 +108,9 @@ export class JsonEventParser extends Transform {
   }
 
   private charError(buffer: Buffer, i: number): void {
+    const state = JsonEventParser.tokenName(this.tState);
     this.tState = STOP;
-    throw new Error(`Unexpected ${JSON.stringify(String.fromCharCode(buffer[i]))} at position ${i} in state ${JsonEventParser.tokenName(this.tState)}`);
+    throw new Error(`Unexpected ${JSON.stringify(String.fromCharCode(buffer[i]))} at position ${i} in state ${state}`);
   }
 
   private appendStringChar(char: number): void {
