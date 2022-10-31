@@ -34,8 +34,14 @@ const FALSE4 = Constants.FALSE4 = 0x34;
 const NULL1 = Constants.NULL1 = 0x41;
 const NULL2 = Constants.NULL2 = 0x42;
 const NULL3 = Constants.NULL3 = 0x43;
-const NUMBER1 = Constants.NUMBER1 = 0x51;
-const NUMBER3 = Constants.NUMBER3 = 0x53;
+const NUMBER_AFTER_MINUS = Constants.NUMBER_AFTER_MINUS = 0x51;
+const NUMBER_BEFORE_DOT = Constants.NUMBER_BEFORE_DOT = 0x52;
+const NUMBER_EXPECT_DOT_OR_EXP = Constants.NUMBER_EXPECT_DOT_OR_EXP = 0x53;
+const NUMBER_AFTER_DOT = Constants.NUMBER_AFTER_DOT = 0x54;
+const NUMBER_AFTER_DOT_AND_DIGIT = Constants.NUMBER_AFTER_DOT_AND_DIGIT = 0x55;
+const NUMBER_AFTER_EXP_CHAR = Constants.NUMBER_AFTER_EXP_CHAR = 0x56;
+const NUMBER_AFTER_EXP_CHAR_AND_SIGN = Constants.NUMBER_AFTER_EXP_CHAR_AND_SIGN = 0x57;
+const NUMBER_AFTER_EXP_CHAR_AND_SIGN_AND_DIGIT = Constants.NUMBER_AFTER_EXP_CHAR_AND_SIGN_AND_DIGIT = 0x58;
 const STRING1 = Constants.STRING1 = 0x61;
 const STRING2 = Constants.STRING2 = 0x62;
 const STRING3 = Constants.STRING3 = 0x63;
@@ -178,11 +184,15 @@ export class JsonEventParser extends Transform {
         } else if (char === 0x2D) {
           // -
           this.string = '-';
-          this.tState = NUMBER1;
-        } else if (char >= 0x30 && char < 0x40) {
+          this.tState = NUMBER_AFTER_MINUS;
+        } else if (char === 0x30) {
+          // 0
+          this.string = '0';
+          this.tState = NUMBER_EXPECT_DOT_OR_EXP;
+        } else if (0x30 < char && char <= 0x39) {
           // 1-9
           this.string = String.fromCharCode(char);
-          this.tState = NUMBER3;
+          this.tState = NUMBER_BEFORE_DOT;
         } else if (char === 0x20 || char === 0x09 || char === 0x0A || char === 0x0D) {
           // Whitespace
         } else {
@@ -281,7 +291,7 @@ export class JsonEventParser extends Transform {
         // Unicode hex codes
         char = buffer[i];
         // 0-9 A-F a-f
-        if ((char >= 0x30 && char < 0x40) || (char > 0x40 && char <= 0x46) || (char > 0x60 && char <= 0x66)) {
+        if ((char >= 0x30 && char <= 0x39) || (char > 0x40 && char <= 0x46) || (char > 0x60 && char <= 0x66)) {
           this.unicode += String.fromCharCode(char);
           if (this.tState++ === STRING6) {
             const intVal = Number.parseInt(this.unicode, 16);
@@ -305,35 +315,112 @@ export class JsonEventParser extends Transform {
         } else {
           return this.charError(buffer, i);
         }
-      } else if (this.tState === NUMBER1 || this.tState === NUMBER3) {
+      } else if (this.tState === NUMBER_AFTER_MINUS) {
         char = buffer[i];
-
-        switch (char) {
-          case 0x30:
-          case 0x31:
-          case 0x32:
-          case 0x33:
-          case 0x34:
-          case 0x35:
-          case 0x36:
-          case 0x37:
-          case 0x38:
-          case 0x39:
-          case 0x2E:
-          case 0x65:
-          case 0x45:
-          case 0x2B:
-          case 0x2D:
-            this.string += String.fromCharCode(char);
-            this.tState = NUMBER3;
-            break;
-          default:
-            this.tState = START;
-            this.numberReviver(this.string);
-            this.offset += this.string.length - 1;
-            this.string = '';
-            i--;
-            break;
+        if (char === 0x30) {
+          this.string += String.fromCharCode(char);
+          this.tState = NUMBER_EXPECT_DOT_OR_EXP;
+        } else if (0x30 < char && char <= 0x39) {
+          this.string += String.fromCharCode(char);
+          this.tState = NUMBER_BEFORE_DOT;
+        } else {
+          return this.charError(buffer, i);
+        }
+      } else if (this.tState === NUMBER_BEFORE_DOT) {
+        char = buffer[i];
+        if (0x30 <= char && char <= 0x39) {
+          this.string += String.fromCharCode(char);
+        } else if (char === 0x2E) {
+          this.string += '.';
+          this.tState = NUMBER_AFTER_DOT;
+        } else if (char === 0x45) {
+          this.string += 'E';
+          this.tState = NUMBER_AFTER_EXP_CHAR;
+        } else if (char === 0x65) {
+          this.string += 'e';
+          this.tState = NUMBER_AFTER_EXP_CHAR;
+        } else {
+          this.tState = START;
+          this.onToken(NUMBER, Number(this.string));
+          this.offset += this.string.length - 1;
+          this.string = '';
+          i--;
+        }
+      } else if (this.tState === NUMBER_EXPECT_DOT_OR_EXP) {
+        char = buffer[i];
+        if (char === 0x2E) {
+          this.string += '.';
+          this.tState = NUMBER_AFTER_DOT;
+        } else if (char === 0x45) {
+          this.string += 'E';
+          this.tState = NUMBER_AFTER_EXP_CHAR;
+        } else if (char === 0x65) {
+          this.string += 'e';
+          this.tState = NUMBER_AFTER_EXP_CHAR;
+        } else {
+          this.tState = START;
+          this.onToken(NUMBER, Number(this.string));
+          this.offset += this.string.length - 1;
+          this.string = '';
+          i--;
+        }
+      } else if (this.tState === NUMBER_AFTER_DOT) {
+        char = buffer[i];
+        if (0x30 <= char && char <= 0x39) {
+          this.string += String.fromCharCode(char);
+          this.tState = NUMBER_AFTER_DOT_AND_DIGIT;
+        } else {
+          return this.charError(buffer, i);
+        }
+      } else if (this.tState === NUMBER_AFTER_DOT_AND_DIGIT) {
+        char = buffer[i];
+        if (0x30 <= char && char <= 0x39) {
+          this.string += String.fromCharCode(char);
+        } else if (char === 0x45) {
+          this.string += 'E';
+          this.tState = NUMBER_AFTER_EXP_CHAR;
+        } else if (char === 0x65) {
+          this.string += 'e';
+          this.tState = NUMBER_AFTER_EXP_CHAR;
+        } else {
+          this.tState = START;
+          this.onToken(NUMBER, Number(this.string));
+          this.offset += this.string.length - 1;
+          this.string = '';
+          i--;
+        }
+      } else if (this.tState === NUMBER_AFTER_EXP_CHAR) {
+        char = buffer[i];
+        if (0x30 <= char && char <= 0x39) {
+          this.string += String.fromCharCode(char);
+          this.tState = NUMBER_AFTER_EXP_CHAR_AND_SIGN_AND_DIGIT;
+        } else if (char === 0x2D) {
+          this.string += '-';
+          this.tState = NUMBER_AFTER_EXP_CHAR_AND_SIGN;
+        } else if (char === 0x2B) {
+          this.string += '+';
+          this.tState = NUMBER_AFTER_EXP_CHAR_AND_SIGN;
+        } else {
+          return this.charError(buffer, i);
+        }
+      } else if (this.tState === NUMBER_AFTER_EXP_CHAR_AND_SIGN) {
+        char = buffer[i];
+        if (0x30 <= char && char <= 0x39) {
+          this.string += String.fromCharCode(char);
+          this.tState = NUMBER_AFTER_EXP_CHAR_AND_SIGN_AND_DIGIT;
+        } else {
+          return this.charError(buffer, i);
+        }
+      } else if (this.tState === NUMBER_AFTER_EXP_CHAR_AND_SIGN_AND_DIGIT) {
+        char = buffer[i];
+        if (0x30 <= char && char <= 0x39) {
+          this.string += String.fromCharCode(char);
+        } else {
+          this.tState = START;
+          this.onToken(NUMBER, Number(this.string));
+          this.offset += this.string.length - 1;
+          this.string = '';
+          i--;
         }
       } else if (this.tState === TRUE1) {
         // R
@@ -522,11 +609,5 @@ export class JsonEventParser extends Transform {
         return this.parseError(token, value);
       }
     }
-  }
-
-  // Override to implement your own number reviver.
-  // Any value returned is treated as error and will interrupt parsing.
-  private numberReviver(text: string): void {
-    this.onToken(NUMBER, Number(text));
   }
 }

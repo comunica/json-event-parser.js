@@ -30,8 +30,8 @@ describe('JsonEventParser', () => {
     });
 
     it('should push other value', () => {
-      parser.write(',1 ');
-      expect(parser.read(1)).toEqual({ type: 'value', value: 1, key: 1 });
+      parser.write(',1.0E1 ');
+      expect(parser.read(1)).toEqual({ type: 'value', value: 1e1, key: 1 });
     });
 
     it('should close array', () => {
