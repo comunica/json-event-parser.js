@@ -98,7 +98,6 @@ export class JsonEventParser extends Transform {
         return key;
       }
     }
-    /* istanbul ignore next */
     throw new Error(`Not supported token code ${code}`);
   }
 
@@ -445,7 +444,6 @@ export class JsonEventParser extends Transform {
 
   private popFromStack(token: number): void {
     const parent = this.stack.pop();
-    /* istanbul ignore next */
     if (parent === undefined) {
       throw new Error('The JSON tree too many object or array closings');
     }
