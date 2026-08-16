@@ -20,4 +20,5 @@ perf/output.json
 **/index.d.ts
 coverage
 documentation
+dist
 .eslintcache
