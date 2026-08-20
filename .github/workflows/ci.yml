@@ -77,3 +77,33 @@ jobs:
           node-version: 18.x
       - run: yarn install
       - run: npx webpack
+
+  benchmark:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-benchmark-modules-${{ hashFiles('**/yarn.lock') }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - run: yarn install
+      - name: Run benchmarks
+        run: yarn run perf
+      - name: Track benchmark results over time
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: json-event-parser
+          tool: customSmallerIsBetter
+          output-file-path: perf/output.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+          alert-threshold: '150%'
+          comment-on-alert: true
+          fail-on-alert: false
+          summary-always: true
