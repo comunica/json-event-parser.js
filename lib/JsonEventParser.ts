@@ -74,6 +74,9 @@ export class JsonEventParser extends Transform {
   private string = '';
   private readonly stringBuffer: Buffer = Buffer.alloc(STRING_BUFFER_SIZE);
   private stringBufferOffset = 0;
+  // Number of UTF-8 bytes appended to the current string, tracked incrementally so that
+  // closing a string does not have to re-measure it with Buffer.byteLength.
+  private stringByteLength = 0;
   // Unicode escapes
   private unicode = '';
   private highSurrogate: number | undefined = undefined;
@@ -120,6 +123,7 @@ export class JsonEventParser extends Transform {
     }
 
     this.stringBuffer[this.stringBufferOffset++] = char;
+    this.stringByteLength++;
   }
 
   private appendStringBuf(buf: Buffer, start?: number, end?: number): void {
@@ -132,6 +136,7 @@ export class JsonEventParser extends Transform {
 
     buf.copy(this.stringBuffer, this.stringBufferOffset, start, end);
     this.stringBufferOffset += size;
+    this.stringByteLength += size;
   }
 
   public _transform(chunk: any, encoding: string, callback: (error?: Error | null, data?: any) => void): void {
@@ -181,6 +186,7 @@ export class JsonEventParser extends Transform {
           // "
           this.string = '';
           this.stringBufferOffset = 0;
+          this.stringByteLength = 0;
           this.tState = STRING1;
         } else if (char === 0x2D) {
           // -
@@ -245,12 +251,31 @@ export class JsonEventParser extends Transform {
           this.string += this.stringBuffer.toString('utf8', 0, this.stringBufferOffset);
           this.stringBufferOffset = 0;
           this.onToken(STRING, this.string);
-          this.offset += Buffer.byteLength(this.string, 'utf8') + 1;
+          this.offset += this.stringByteLength + 1;
           this.string = '';
         } else if (char === 0x5C) {
           this.tState = STRING2;
         } else if (char >= 0x20) {
-          this.appendStringChar(char);
+          // Reaching here means the byte is in [0x20, 0x7F] and is neither '"' nor '\',
+          // so it is copied verbatim. Scan ahead for the whole run of such bytes and copy
+          // it in one go: strings are the bulk of a typical document, and appending them
+          // one byte at a time costs a call and a bounds check per character.
+          if (this.stringBufferOffset >= STRING_BUFFER_SIZE) {
+            this.string += this.stringBuffer.toString('utf8', 0, this.stringBufferOffset);
+            this.stringBufferOffset = 0;
+          }
+          // Bounded by the free space, so the run is always copied in a single call.
+          const runEnd = Math.min(len, i + STRING_BUFFER_SIZE - this.stringBufferOffset);
+          let run = i + 1;
+          while (run < runEnd) {
+            const next = buffer[run];
+            if (next < 0x20 || next > 0x7F || next === 0x22 || next === 0x5C) {
+              break;
+            }
+            run++;
+          }
+          this.appendStringBuf(buffer, i, run);
+          i = run - 1;
         } else {
           return this.charError(buffer, i);
         }
