@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/cache@v3
+      - uses: actions/cache@v6
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-lint-modules-${{ hashFiles('**/yarn.lock') }}
@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
-      - uses: actions/cache@v3
+      - uses: actions/cache@v6
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-test-modules-${{ hashFiles('**/yarn.lock') }}
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/cache@v3
+      - uses: actions/cache@v6
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-webpack-modules-${{ hashFiles('**/yarn.lock') }}
@@ -85,7 +85,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/cache@v3
+      - uses: actions/cache@v6
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-benchmark-modules-${{ hashFiles('**/yarn.lock') }}
