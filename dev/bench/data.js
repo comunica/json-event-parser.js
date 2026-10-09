@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791322885554,
+  "lastUpdate": 1791533741900,
   "repoUrl": "https://github.com/comunica/json-event-parser.js",
   "entries": {
     "json-event-parser": [
@@ -295,6 +295,80 @@ window.BENCHMARK_DATA = {
           {
             "name": "json-event-parser (tokenizer only) · dbpedia-expanded · peak heap",
             "value": 8.03,
+            "unit": "MB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bca39d50304e5d6eb6efb25be5d773af631cca80",
+          "message": "Update dependency node to v24",
+          "timestamp": "2026-10-06T21:40:16Z",
+          "tree_id": "c0e470fc636cb360f201444d10105db5c8783de8",
+          "url": "https://github.com/comunica/json-event-parser.js/commit/bca39d50304e5d6eb6efb25be5d773af631cca80"
+        },
+        "date": 1791533741331,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "json-event-parser · person · time",
+            "value": 0.0553,
+            "unit": "ms"
+          },
+          {
+            "name": "json-event-parser (tokenizer only) · person · time",
+            "value": 0.0313,
+            "unit": "ms"
+          },
+          {
+            "name": "json-event-parser · sparql-init · time",
+            "value": 0.1013,
+            "unit": "ms"
+          },
+          {
+            "name": "json-event-parser (tokenizer only) · sparql-init · time",
+            "value": 0.0534,
+            "unit": "ms"
+          },
+          {
+            "name": "json-event-parser · toRdf-manifest · time",
+            "value": 3.0652,
+            "unit": "ms"
+          },
+          {
+            "name": "json-event-parser (tokenizer only) · toRdf-manifest · time",
+            "value": 1.7787,
+            "unit": "ms"
+          },
+          {
+            "name": "json-event-parser · dbpedia-expanded · time",
+            "value": 195.9533,
+            "unit": "ms"
+          },
+          {
+            "name": "json-event-parser · dbpedia-expanded · peak heap",
+            "value": 32.16,
+            "unit": "MB"
+          },
+          {
+            "name": "json-event-parser (tokenizer only) · dbpedia-expanded · time",
+            "value": 64.2602,
+            "unit": "ms"
+          },
+          {
+            "name": "json-event-parser (tokenizer only) · dbpedia-expanded · peak heap",
+            "value": 8.11,
             "unit": "MB"
           }
         ]
