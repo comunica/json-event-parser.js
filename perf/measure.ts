@@ -11,11 +11,16 @@ const CHUNK_SIZE = 64 * 1_024;
  * Iterations are repeated until a single sample takes at least this long, so that timer
  * resolution does not dominate on the small documents.
  */
-const MIN_SAMPLE_MS = 100;
+const MIN_SAMPLE_MS = 500;
+/**
+ * Parses run before calibration, so that the iteration count is derived from the steady-state
+ * cost rather than from a cold parse.
+ */
+const CALIBRATION_WARMUP = 20;
 /**
  * Samples that are thrown away to let the JIT warm up.
  */
-const WARMUP_SAMPLES = 2;
+const WARMUP_SAMPLES = 3;
 /**
  * Samples that are kept. The median is reported, which is far more stable than the mean on
  * shared CI runners.
@@ -51,8 +56,15 @@ async function measure(implementation: IImplementation, data: Buffer): Promise<I
   const chunks = chunk(data);
 
   // Calibrate: repeat the parse enough times that a single sample clears MIN_SAMPLE_MS.
+  // Calibrate on a warm parse, not a cold one. A cold parse can be several times slower than
+  // the steady state, which would size every sample far too short and leave the measurement
+  // straddling V8's optimisation tiers.
+  let events = 0;
+  for (let warm = 0; warm < CALIBRATION_WARMUP; warm++) {
+    events = await implementation.parse(chunks, new Sampler(0));
+  }
   const calibrationStart = process.hrtime.bigint();
-  const events = await implementation.parse(chunks, new Sampler(0));
+  events = await implementation.parse(chunks, new Sampler(0));
   const calibrationMs = Number(process.hrtime.bigint() - calibrationStart) / 1e6;
   const iterations = Math.min(5_000, Math.max(1, Math.ceil(MIN_SAMPLE_MS / Math.max(calibrationMs, 0.01))));
 
@@ -74,7 +86,11 @@ async function measure(implementation: IImplementation, data: Buffer): Promise<I
   }
 
   durations.sort((left, right) => left - right);
-  const msPerIteration = durations[Math.floor(durations.length / 2)];
+  // The minimum, not the median. Benchmark noise is one-sided: scheduling, GC and JIT tiering
+  // can only ever make a sample slower, so the fastest sample is the closest estimate of the
+  // real cost. On sub-millisecond workloads the median still swings by more than 3x between
+  // runs, which is enough to trip the CI regression alert on noise alone.
+  const msPerIteration = durations[0];
   return {
     bytes: data.length,
     msPerIteration,

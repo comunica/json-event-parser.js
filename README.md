@@ -74,19 +74,24 @@ the SAX parser that `jsonld-streaming-parser` currently builds on. `tokenizer on
 object-mode stream plumbing and counts events directly; it is not part of the public API, and is
 measured to show how much of the wall time is spent on stream overhead rather than on parsing.
 
-Median time per parse, measured on Node 22. Absolute numbers vary per machine; the ratios are the
+Fastest time per parse, measured on Node 22. Absolute numbers vary per machine; the ratios are the
 point:
 
 | Workload | **json-event-parser** | *tokenizer only* | **@bergos/jsonparse** |
 | -------- | --------------------- | ---------------- | --------------------- |
-| `person` (0.4 KiB) | 0.199 ms | 0.114 ms | 0.090 ms |
-| `sparql-init` (3.3 KiB) | 0.311 ms | 0.084 ms | 0.178 ms |
-| `toRdf-manifest` (153.7 KiB) | 8.100 ms | 6.729 ms | 5.953 ms |
-| `dbpedia-expanded` (9.1 MiB) | 357.6 ms | 156.7 ms | 199.4 ms |
+| `person` (0.4 KiB) | 0.077 ms | 0.028 ms | 0.022 ms |
+| `sparql-init` (3.3 KiB) | 0.103 ms | 0.045 ms | 0.051 ms |
+| `toRdf-manifest` (153.7 KiB) | 3.598 ms | 1.430 ms | 2.289 ms |
+| `dbpedia-expanded` (9.1 MiB) | 260.9 ms | 85.3 ms | 160.8 ms |
 
-End to end this parser is currently **1.4x to 2.2x slower** than `jsonparse`. That gap is stream
-plumbing rather than parsing: the tokenizer alone is *faster* than `jsonparse` on the two workloads
-where it is not dominated by per-parse setup.
+**The tokenizer is faster than `jsonparse` on every workload except the 0.4 KiB one**, where the
+cost is dominated by per-parse setup rather than by parsing: 0.88x on `sparql-init`, 0.62x on
+`toRdf-manifest`, and 0.53x on `dbpedia-expanded`.
+
+End to end, however, this parser is still **1.6x slower** than `jsonparse` on the large documents.
+That entire remaining gap is Node's object-mode stream plumbing, not parsing — on
+`dbpedia-expanded` it is 176 ms of the 261 ms. Recovering it needs a callback entrypoint rather
+than a faster tokenizer.
 
 What it buys is memory. `jsonparse` retains the entire parsed document, so its footprint grows with
 the input, while this parser's stays flat:
