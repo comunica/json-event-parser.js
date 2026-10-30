@@ -27,7 +27,7 @@
     "test"
   ],
   "dependencies": {
-    "@types/readable-stream": "^2.3.14",
+    "@types/readable-stream": "^4.0.0",
     "readable-stream": "^4.2.0"
   },
   "devDependencies": {
