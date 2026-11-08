@@ -29,10 +29,23 @@ starts from a clean slate.
 **Documents are fed in 64 KiB chunks**, mimicking a network-sourced stream, and every
 implementation sees identical chunk boundaries.
 
-**Timings are the median of 7 samples** after 2 discarded warmup samples. Each sample repeats the
-parse enough times to clear 100 ms, so that timer resolution does not dominate on the small
-documents. The median is used rather than the mean because it is far more stable on shared CI
-runners.
+**Timings are the fastest of 7 samples**, after 3 discarded warmup samples, with each sample
+repeating the parse enough times to clear 500 ms. Three details here are load-bearing, and were
+each arrived at by measuring the harness against itself:
+
+- **The minimum, not the mean or median.** Benchmark noise is one-sided — scheduling, GC and JIT
+  tiering can only ever make a sample slower — so the fastest sample is the closest estimate of
+  the real cost. Reporting the median left the sub-millisecond workloads swinging by more than 3x
+  between runs, which alone would trip the CI regression alert.
+- **Calibration runs warm.** The iteration count per sample is derived from a parse that has
+  already run `CALIBRATION_WARMUP` times. Sizing it from a cold parse made samples several times
+  shorter than intended and left the measurement straddling V8's optimisation tiers, showing up as
+  a bimodal distribution — `toRdf-manifest` alternated between 1.43 ms and 2.06 ms depending on
+  which tier it settled in.
+- **A 500 ms sample floor**, so timer resolution does not dominate on the small documents.
+
+Together these bring every workload's run-to-run spread within 1.07x–1.41x, comfortably inside the
+alert threshold. Without them the same measurements spanned 3.3x.
 
 **Heap is sampled per event**, not on a timer: an interval timer never fires inside a synchronous
 parser. `process.memoryUsage()` is too expensive to call per event, so only every 4096th sample
